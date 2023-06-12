@@ -11,6 +11,4 @@ Key Features:
 
   4. Multiple Difficulty Levels: The AI opponents are equipped with varying levels of strategic prowess, allowing players to choose the level of challenge they desire. From novice to expert, each AI opponent utilizes intelligent algorithms to make decisions, providing an engaging and immersive experience.
 
-  5. Visual and Auditory Enhancements: The game is enhanced with stunning graphics and smooth animations that bring the Othello board to life. Immerse yourself in the gameplay with captivating sound effects and ambient background music, creating a truly immersive experience.
-
-xxxxxxx
+  5. Visual Enhancements: The game is enhanced with stunning graphics and smooth animations that bring the Othello board to life. Immerse yourself in the gameplay.
