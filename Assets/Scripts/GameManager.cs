@@ -145,5 +145,132 @@ public class GameManager : MonoBehaviour
         CanMove = true;
 
     }
+        private Position SceneToBoardPos(Vector3 scenepos) {
+
+        int col = (int)(scenepos.x - 0.25f);
+        int row = 7 - (int)(scenepos.z - 0.25f);
+
+        return new Position(row, col);
+        
+    }
+
+    private Vector3 BoardToScenePos(Position boardPos) 
+    {
+        return new Vector3(boardPos.Col + 0.75f, 0, 7 - boardPos.Row + 0.75f);
+
+    }
+
+    private void SpawnDisk( DiskScript prefab, Position boardPos) {
+
+        Vector3 scenePos = BoardToScenePos(boardPos) + Vector3.up * 0.2f;
+        disks[boardPos.Row, boardPos.Col] = Instantiate(prefab, scenePos, Quaternion.identity);
+        
+    }
+    
+
+    private void AddStartDisks () {
+
+        foreach(Position boardPos in gameState.OccupiedPositions()) 
+        {
+
+            Player player = gameState.Board[boardPos.Row, boardPos.Col];
+            SpawnDisk(discPrefabs[player], boardPos);
+            
+        }
+        
+    }
+
+    private void FlipDisks(List<Position> positions){
+
+        foreach(Position boardPos in positions){
+            disks[boardPos.Row, boardPos.Col].Flip();
+        }
+    }
+
+    private IEnumerator ShowMove(MovementInfo moveInfo){
+
+        SpawnDisk(discPrefabs[moveInfo.Player], moveInfo.Position);
+        yield return new WaitForSeconds(0.33f);
+        FlipDisks(moveInfo.Outflanked);
+        yield return new WaitForSeconds(0.83f);
+    }
+
+    private IEnumerator ShowTurnSkipped(Player SkippedPlayer){
+
+        uiManager.SetSkippedTXT(SkippedPlayer);
+        yield return uiManager.AnimateTopText();
+    }
+
+    public IEnumerator ShowGameOver(Player winner){
+
+        uiManager.SetTopText("Both Players Can't Move");
+        yield return uiManager.AnimateTopText();
+
+        yield return uiManager.ShowScoreTxt();
+        yield return new WaitForSeconds(0.5f);
+
+        yield return ShowCount();
+
+        uiManager.SetWinnerText(winner);
+        yield return uiManager.ShowEndScreen();
+
+    }
+
+    private IEnumerator ShowTurnOutcome(MovementInfo moveInfo){
+
+        if(gameState.GameOver){
+            yield return ShowGameOver(gameState.winner);
+            yield break;
+        }
+
+        Player currentPlayer = gameState.CurrentPlayer;
+
+        if(currentPlayer == moveInfo.Player){
+            yield return ShowTurnSkipped(currentPlayer.Opponent());
+        }
+
+        uiManager.SetPlayerTXT(currentPlayer);
+    }
+
+    private IEnumerator ShowCount(){
+
+        int black = 0, white = 0;
+
+        foreach(Position pos in gameState.OccupiedPositions()){
+
+            Player player = gameState.Board[pos.Row, pos.Col];
+
+            if(player == Player.Black){
+                black++;
+                uiManager.SetBlackScoreTxt(black);
+            }
+
+            if(player == Player.White){
+                white++;
+                uiManager.SetWhiteScoreTxt(white);
+            }
+
+            disks[pos.Row, pos.Col].Twitch();
+            yield return new WaitForSeconds(0.05f);
+        }
+    }
+
+
+    public IEnumerator RestartGame(){
+
+        yield return uiManager.HideEndScreen();
+        Scene activeScene = SceneManager.GetActiveScene();
+        SceneManager.LoadScene(activeScene.name);
+    }
+
+    public void OnPlayAgianClicked(){
+
+        StartCoroutine(RestartGame());
+
+    }
+
+    public void OnReturnButtonClicked () {
+        SceneManager.LoadScene("Main Menu");
+    }
     
 }
